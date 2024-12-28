@@ -4,6 +4,7 @@ import requests
 import pandas as pd
 import re
 import os
+import json
 
 # Your Spoonacular API key
 API_KEY = '2672152fccaa4240b436feb8ecf71bc2'
@@ -15,6 +16,12 @@ def get_recipes_from_api(query, recipes, num_results=5):
 
     if response.status_code == 402:
         print("API limit reached.")
+        return
+
+    # Check for the presence of the 'results' key
+    if 'results' not in response or not response['results']:
+        print("Error: No results found in the API response.")
+        return
               
     data = response.json()
     
@@ -26,6 +33,13 @@ def get_recipes_from_api(query, recipes, num_results=5):
         detailed_url = f'https://api.spoonacular.com/recipes/{recipe_id}/information?apiKey={API_KEY}'
         detailed_response = requests.get(detailed_url)
         detailed_data = detailed_response.json()
+
+        if not detailed_data:
+            print(f"Error: Empty JSON response for recipe_id {recipe_id}")
+            return
+        
+        # print(json.dumps(detailed_data, indent=2))
+        # print("**************")
 
         recipe_name = detailed_data['title']
 
@@ -83,7 +97,7 @@ def load_recipes_data():
         # Fetch the recipes using the API and save them to CSV
         query = "burger"
         recipes = []
-        for i in range(25):
+        for i in range(20):
             get_recipes_from_api(query, recipes)
             query = recipes[i][0].split(" ")[0]  # Update query for next API call
 
