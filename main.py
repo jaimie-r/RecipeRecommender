@@ -10,9 +10,10 @@ import json
 API_KEY = '2672152fccaa4240b436feb8ecf71bc2'
 
 # Function to get detailed recipe information
-def get_recipes_from_api(query, recipes, num_results=5):
+def get_recipes_from_api(query, recipes, i, num_results=10):
     url = f'https://api.spoonacular.com/recipes/complexSearch?query={query}&number={num_results}&apiKey={API_KEY}'
     response = requests.get(url)
+    i = i + 1
 
     if response.status_code == 402:
         print("API limit reached.")
@@ -20,6 +21,9 @@ def get_recipes_from_api(query, recipes, num_results=5):
 
     # Check for the presence of the 'results' key
     if 'results' not in response or not response['results']:
+        print("Rate limit remaining:", response.headers.get('X-RateLimit-Remaining'))
+        print("query:")
+        print(query)
         print("Error: No results found in the API response.")
         return
               
@@ -33,6 +37,7 @@ def get_recipes_from_api(query, recipes, num_results=5):
         detailed_url = f'https://api.spoonacular.com/recipes/{recipe_id}/information?apiKey={API_KEY}'
         detailed_response = requests.get(detailed_url)
         detailed_data = detailed_response.json()
+        i = i + 1
 
         if not detailed_data:
             print(f"Error: Empty JSON response for recipe_id {recipe_id}")
@@ -86,6 +91,7 @@ def get_recipes_from_api(query, recipes, num_results=5):
             protein_density,
             num_vegetable_ingredients
         ])
+        query_i = query_i + 1
 
 # Function to load the recipe data from CSV or API
 def load_recipes_data():
@@ -95,11 +101,15 @@ def load_recipes_data():
         print("Data loaded from CSV.")
     else:
         # Fetch the recipes using the API and save them to CSV
-        query = "burger"
+        query = ["fries", "chicken", "steak", "sausage", "bacon", "burger", "cheese", "potato", 
+            "pepperoni", "ramen", "tortilla", "bowl", "cauliflower", "kale", "salmon", "tuna", 
+            "quinoa", "lentil"]
         recipes = []
-        for i in range(20):
-            get_recipes_from_api(query, recipes)
-            query = recipes[i][0].split(" ")[0]  # Update query for next API call
+        i = 0
+        query_i = 0
+        while i < 150:
+            get_recipes_from_api(query[query_i], recipes, i)
+            query_i = query_i + 1
 
         # Create a DataFrame
         df = pd.DataFrame(recipes, columns=[
