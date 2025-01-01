@@ -5,7 +5,6 @@ import pandas as pd
 import re
 import os
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error
 
 # Your Spoonacular API key
